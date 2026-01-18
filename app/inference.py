@@ -15,12 +15,11 @@ def apply_nms(boxes, scores, score_threshold, iou_threshold):
     if indices is None or len(indices) == 0:
         return []
 
-    # Handle both [[0], [1]] and [0, 1] formats
+    # Handle OpenCV version differences
     if isinstance(indices[0], (list, tuple, np.ndarray)):
         return [int(i[0]) for i in indices]
     else:
         return [int(i) for i in indices]
-
 
 
 class YOLODetector:
@@ -32,7 +31,7 @@ class YOLODetector:
         self.input_name = self.session.get_inputs()[0].name
         self.conf_thres = conf_thres
         self.iou_thres = iou_thres
-        self.img_size = 320  # must match export size
+        self.img_size = 320
 
     def preprocess(self, image):
         img = cv2.resize(image, (self.img_size, self.img_size))
@@ -43,7 +42,7 @@ class YOLODetector:
         return img
 
     def postprocess(self, outputs, orig_shape):
-        preds = outputs[0][0]  # (25200, 85)
+        preds = outputs[0][0]
         img_h, img_w = orig_shape
 
         raw_boxes = []
@@ -54,14 +53,12 @@ class YOLODetector:
             if obj_conf < self.conf_thres:
                 continue
 
-            class_scores = det[5:]
-            class_score = np.max(class_scores)
+            class_score = np.max(det[5:])
             score = obj_conf * class_score
 
             if score < self.conf_thres:
                 continue
 
-            # YOLO outputs normalized cx, cy, w, h
             cx, cy, bw, bh = det[:4]
 
             x = int((cx - bw / 2) * img_w)
@@ -69,7 +66,7 @@ class YOLODetector:
             w = int(bw * img_w)
             h = int(bh * img_h)
 
-            # Road‑region filter (bottom 60% only)
+            # Road region only
             if y < img_h * 0.4:
                 continue
 

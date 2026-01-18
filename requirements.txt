@@ -1,6 +1,7 @@
+pytesseract
+opencv-python-headless
+onnxruntime
 fastapi
 uvicorn
-opencv-python-headless
 numpy
-onnxruntime
 python-multipart

@@ -11,9 +11,16 @@ def apply_nms(boxes, scores, score_threshold, iou_threshold):
         score_threshold,
         iou_threshold
     )
-    if len(indices) == 0:
+
+    if indices is None or len(indices) == 0:
         return []
-    return [i[0] for i in indices]
+
+    # Handle both [[0], [1]] and [0, 1] formats
+    if isinstance(indices[0], (list, tuple, np.ndarray)):
+        return [int(i[0]) for i in indices]
+    else:
+        return [int(i) for i in indices]
+
 
 
 class YOLODetector:
